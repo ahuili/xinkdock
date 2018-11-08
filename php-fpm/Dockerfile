@@ -16,23 +16,24 @@ LABEL maintainer="Arthur Li <li_ahui@126.com>"
 ARG CHANGE_SOURCE=false
 RUN if [ ${CHANGE_SOURCE} = true ]; then \
     # Change application source from dl-cdn.alpinelinux.org to aliyun source
-    sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/' /etc/apk/repositories \
+    sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
 ;fi
 
 # always run apt update when start and after add new source list, then clean up at end.
-RUN apk upgrade --update && \
-    pecl channel-update pecl.php.net
-
-#
-#--------------------------------------------------------------------------
-# Mandatory Software's Installation
-#--------------------------------------------------------------------------
-#
-# Mandatory Software's such as ("mcrypt", "pdo_mysql", "libssl-dev", ....)
-# are installed on the base image 'laradock/php-fpm' image. If you want
-# to add more Software's or remove existing one, you need to edit the
-# base image (https://github.com/Laradock/php-fpm).
-#
+RUN rm -rf /var/cache/apk/* && \
+    rm -rf /tmp/* \
+    && apk add --no-cache --update --virtual .build-deps $PHPIZE_DEPS \
+    && pecl channel-update pecl.php.net \
+    && apk add --no-cache freetype libpng libjpeg-turbo freetype-dev libpng-dev libjpeg-turbo-dev && \
+    docker-php-ext-configure gd \
+    --with-gd \
+    --with-freetype-dir=/usr/include/ \
+    --with-png-dir=/usr/include/ \
+    --with-jpeg-dir=/usr/include/ && \
+    NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) && \
+    docker-php-ext-install -j${NPROC} gd \
+    && rm -rf /var/cache/apk/* && \
+    rm -rf /tmp/* 
 
 #
 #--------------------------------------------------------------------------
@@ -120,8 +121,12 @@ ARG INSTALL_MONGO=false
 
 RUN if [ ${INSTALL_MONGO} = true ]; then \
     # Install the mongodb extension
-    pecl install mongodb && \
-    docker-php-ext-enable mongodb \
+    apk add --no-cache --update libressl-dev && \
+    wget https://github.com/mongodb/mongo-php-driver/releases/download/1.5.3/mongodb-1.5.3.tgz -O /tmp/mongodb.tar.tgz \
+    && pecl install /tmp/mongodb.tar.tgz \
+    && rm -rf /tmp/mongodb.tar.tgz \
+    #pecl install mongodb && \
+    && docker-php-ext-enable mongodb \
 ;fi
 
 ###########################################################################
@@ -132,8 +137,21 @@ ARG INSTALL_SEASLOG=false
 
 RUN if [ ${INSTALL_SEASLOG} = true ]; then \
     # Install the SeasLog extension
-    pecl install seaslog && \
-    docker-php-ext-enable seaslog \
+    wget https://github.com/SeasX/SeasLog/archive/SeasLog-1.8.6.tar.gz -O /tmp/seaslog.tar.gz \
+    && cd /tmp \
+    && mkdir -p seaslog \
+    && tar -xf seaslog.tar.gz -C seaslog --strip-components=1 \
+    && rm seaslog.tar.gz \
+    && ( \
+        cd seaslog \
+        && phpize \
+        && ./configure \
+        && make -j${NPROC} \
+        && make install \
+    ) \
+    && rm -r seaslog \
+    #pecl install seaslog && \
+    && docker-php-ext-enable seaslog \
 ;fi
 
 # Copy seaslog configration
@@ -148,6 +166,8 @@ ARG INSTALL_ZIP_ARCHIVE=false
 RUN if [ ${INSTALL_ZIP_ARCHIVE} = true ]; then \
     # Install the zip extension
     docker-php-ext-install zip \
+    #apk add docker-php-ext-configure \
+    #--with-zlib-dir=/usr && docker-php-ext-install zip \
 ;fi
 
 
@@ -227,15 +247,16 @@ RUN php -v | head -n 1 | grep -q "PHP ${PHP_VERSION}."
 #--------------------------------------------------------------------------
 #
 
-COPY ./xink.ini /usr/local/etc/php/conf.d
+#COPY ./xink.ini /usr/local/etc/php/conf.d
 COPY ./xlaravel.pool.conf /usr/local/etc/php-fpm.d/
 
 USER root
 
 # Clean up
-
-
-RUN usermod -u 1000 www-data
+RUN apk del .build-deps \
+    && rm -rf /var/cache/apk/* \
+    && rm -rf /tmp/* /usr/share/man \
+    && apk del --no-cache freetype-dev libpng-dev libjpeg-turbo-dev
 
 WORKDIR /var/www
 
