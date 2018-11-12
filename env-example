@@ -90,6 +90,13 @@ NGINX_PHP_UPSTREAM_CONTAINER=php-fpm
 NGINX_PHP_UPSTREAM_PORT=9000
 
 
+### PYTHON ################################################
+
+PYTHON_VERSION=3.6
+UWSGI_INI_PATH=/var/www/py_app/uwsgi.ini
+UWSGI_LOG_PATH=./logs/uwsgi/
+
+
 ### REDIS #################################################
 
 REDIS_PORT=6379

@@ -250,6 +250,11 @@ RUN php -v | head -n 1 | grep -q "PHP ${PHP_VERSION}."
 #COPY ./xink.ini /usr/local/etc/php/conf.d
 COPY ./xlaravel.pool.conf /usr/local/etc/php-fpm.d/
 
+# Composer
+RUN curl -sS https://getcomposer.org/installer | php \
+    && mv composer.phar /usr/local/bin/composer \
+    && composer self-update --clean-backups
+
 USER root
 
 # Clean up

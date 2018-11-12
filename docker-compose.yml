@@ -28,6 +28,7 @@ services:
           - INSTALL_PDO_MYSQL=${PHP_FPM_INSTALL_PDO_MYSQL}
           - INSTALL_SWOOLE=${PHP_FPM_INSTALL_SWOOLE}
       volumes:
+        - ./php-fpm/php${PHP_VERSION}.ini:/usr/local/etc/php/php.ini
         - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}
         - ${PHP_SEASLOG_LOG_PATH}:/var/log/www
       expose:
@@ -58,8 +59,25 @@ services:
       restart: unless-stopped      
       depends_on:
         - php-fpm
+        - python
       networks:
         - frontend
+        - backend
+
+#### python ##############################################
+    python:
+      build:
+        context: ./python
+        args:
+          - PYTHON_VERSION=${PYTHON_VERSION}
+      volumes:
+        - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}
+        - ${UWSGI_LOG_PATH}:/var/log/uwsgi
+      expose:
+        - "9090"
+      restart: unless-stopped 
+      command: /bin/sh /root/start.sh
+      networks: 
         - backend
 
 # ### MongoDB ##############################################
