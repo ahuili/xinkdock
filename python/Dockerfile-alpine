@@ -1,0 +1,51 @@
+#
+#--------------------------------------------------------------------------
+# Image Setup
+#--------------------------------------------------------------------------
+#
+
+
+ARG PYTHON_VERSION=${PYTHON_VERSION}
+
+FROM python:${PYTHON_VERSION}-alpine
+
+LABEL maintainer="Arthur Li <li_ahui@126.com>"
+
+# If you're in China, or you need to change sources, will be set CHANGE_SOURCE to true in .env.
+
+ARG CHANGE_SOURCE=false
+RUN if [ ${CHANGE_SOURCE} = true ]; then \
+    # Change application source from dl-cdn.alpinelinux.org to aliyun source
+    sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
+;fi
+
+COPY ./requirements.txt .
+
+RUN apk add --no-cache gcc musl-dev\
+    libc-dev \
+    # for uwsgi
+    linux-headers \
+    # gcc: error trying to exec 'cc1plus': execvp:
+    alpine-sdk
+
+RUN ln -s /usr/include/locale.h /usr/include/xlocale.h
+    
+RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple cython \
+    && pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt \
+    && rm -rf requirements.txt \
+    && rm -rf /var/cache/apk/* \
+    && rm -rf /tmp/* /usr/share/man \
+    && apk del gcc musl-dev linux-headers libc-dev alpine-sdk
+
+RUN apk update \
+    && apk upgrade \
+    && apk add --no-cache bash \
+    && adduser -D -H -u 1000 -s /bin/bash www-data
+
+COPY ./start.sh /root/start.sh
+
+WORKDIR /var/www
+
+EXPOSE 9090
+
+CMD ["python3"]

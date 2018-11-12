@@ -1,0 +1,17 @@
+aniso8601==2.0.1
+click==6.7
+Flask==0.12.2
+Flask-Cors==3.0.3
+Flask-RESTful==0.3.6
+itsdangerous==0.24
+Jinja2==2.10
+MarkupSafe==1.0
+numpy==1.14.2
+pandas==0.22.0
+pymongo==3.6.1
+python-dateutil==2.7.2
+pytz==2018.3
+savReaderWriter==3.4.2
+six==1.11.0
+uWSGI==2.0.17
+Werkzeug==0.14.1
