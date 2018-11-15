@@ -1,12 +1,12 @@
-# 包含`php-fpm` `nginx` `python flask` `jenkins` 等开发环境
+# 基于docker容器的`php-fpm` `nginx` 等开发环境
 
 用 `docker-compose` 管理的多容器开发环境。
 包含镜像
--`php-fpm`
--`node`
--`python`
--`jenkins`
--`nginx`
+- `php-fpm`
+- `node`
+- `python`
+- `jenkins`
+- `nginx`
 
 ## 安装Docker
 

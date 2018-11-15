@@ -240,7 +240,8 @@ ARG INSTALL_COMPOSER=false
 RUN if [ ${INSTALL_COMPOSER} = true]; then \
     curl -sS https://getcomposer.org/installer | php \
     && mv composer.phar /usr/local/bin/composer \
-    && composer self-update --clean-backups
+    && composer self-update --clean-backups \
+;fi
 
 ###########################################################################
 # Check PHP version:
