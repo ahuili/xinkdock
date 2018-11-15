@@ -6,3 +6,4 @@
 .DS_Store
 /jenkins/jenkins_home
 .vscode
+requirements.txt
