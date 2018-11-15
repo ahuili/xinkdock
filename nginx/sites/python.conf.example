@@ -1,0 +1,24 @@
+server {
+    listen 80;
+    server_name py.com;
+    root /var/www/py_app;
+    #error_page 404 /404.html;
+    #error_page 502 /502.html;
+    location / {
+        uwsgi_pass  python:9090;
+        include     uwsgi_params;
+    }
+    location ~ .*\.(gif|jpg|jpeg|png|bmp|swf|flv|mp4|ico)$ {
+      expires 3d;
+      access_log off;
+    }
+    location ~ .*\.(js|css)?$ {
+      expires 3h;
+      access_log off;
+    }
+    location ~ /\.ht {
+      deny all;
+    }
+    error_log /var/log/nginx/python_error.log;
+    access_log /var/log/nginx/python_access.log;
+  }

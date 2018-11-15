@@ -1,3 +1,3 @@
 #! /bin/sh
-uwsgi --ini /var/www/data_layer/uwsgi.ini;
-tail -f /var/log/uwsgi/uwsgi9090.log;
+uwsgi --ini ${UWSGI_INI_PATH};
+tail -f /dev/null;
