@@ -237,7 +237,7 @@ RUN if [ ${INSTALL_PDO_MYSQL} = true ]; then \
 
 ARG INSTALL_COMPOSER=false
 
-RUN if [ ${INSTALL_COMPOSER} = true]; then \
+RUN if [ ${INSTALL_COMPOSER} = true ]; then \
     curl -sS https://getcomposer.org/installer | php \
     && mv composer.phar /usr/local/bin/composer \
     && composer self-update --clean-backups \
@@ -261,7 +261,8 @@ RUN php -v | head -n 1 | grep -q "PHP ${PHP_VERSION}."
 COPY ./xlaravel.pool.conf /usr/local/etc/php-fpm.d/
 
 # Clean up
-RUN apk del .build-deps \
+RUN apk add --no-cache git \
+    && apk del .build-deps \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/* /usr/share/man \
     && apk del --no-cache freetype-dev libpng-dev libjpeg-turbo-dev

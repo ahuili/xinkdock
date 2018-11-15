@@ -20,6 +20,7 @@ RUN if [ ${CHANGE_SOURCE} = true ]; then \
 ;fi
 
 RUN apk add --no-cache git \
+    && npm config set unsafe-perm true \
     && npm install -g webpack \
     && npm install -g bower \
     && npm install -g cnpm --registry=https://registry.npm.taobao.org \
