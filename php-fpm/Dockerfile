@@ -267,6 +267,10 @@ RUN apk add --no-cache git \
     && rm -rf /tmp/* /usr/share/man \
     && apk del --no-cache freetype-dev libpng-dev libjpeg-turbo-dev
 
+USER root
+
+RUN chown -R www-data /var/log/www/
+
 WORKDIR /var/www
 
 CMD ["php-fpm"]
