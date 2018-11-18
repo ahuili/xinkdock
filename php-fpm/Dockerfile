@@ -260,6 +260,11 @@ RUN php -v | head -n 1 | grep -q "PHP ${PHP_VERSION}."
 #COPY ./xink.ini /usr/local/etc/php/conf.d
 COPY ./xlaravel.pool.conf /usr/local/etc/php-fpm.d/
 
+# iconv https://github.com/docker-library/php/issues/240
+
+RUN apk add --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing gnu-libiconv
+ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so php
+
 # Clean up
 RUN apk add --no-cache git \
     && apk del .build-deps \
