@@ -27,6 +27,7 @@ sudo usermod -aG docker $USER;
 
 # start
 sudo systemctl start docker;
+sudo systemctl enable docker;
 
 # 添加内核参数
 sudo tee -a /etc/sysctl.conf <<-EOF
