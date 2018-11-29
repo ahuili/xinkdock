@@ -35,6 +35,7 @@ RUN npm config set unsafe-perm true \
     && npm install -g webpack \
     && npm install -g bower \
     && npm install -g cnpm --registry=https://registry.npm.taobao.org \
+    && git config --global url.https://github.com/.insteadOf git://github.com/ \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/* /usr/share/man
 
