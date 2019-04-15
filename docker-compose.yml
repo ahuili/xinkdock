@@ -96,25 +96,25 @@ services:
       command: tail -f /dev/null
       #restart: unless-stopped 
 
-# ### MongoDB ##############################################
-#     mongo:
-#       build: ./mongo
-#       ports:
-#         - "${MONGODB_PORT}:27017"
-#       volumes:
-#         - ${DATA_PATH_HOST}/mongo:/data/db
-#       networks:
-#         - backend
+### MongoDB ##############################################
+    mongo:
+      build: ./mongo
+      ports:
+        - "${MONGODB_PORT}:27017"
+      volumes:
+        - ${DATA_PATH_HOST}/mongo:/data/db
+      networks:
+        - backend
 
 ### Redis ################################################
-    # redis:
-    #   build: ./redis
-    #   volumes:
-    #     - ${DATA_PATH_HOST}/redis:/data
-    #   ports:
-    #     - "${REDIS_PORT}:6379"
-    #   networks:
-    #     - backend
+    redis:
+      build: ./redis
+      volumes:
+        - ${DATA_PATH_HOST}/redis:/data
+      ports:
+        - "${REDIS_PORT}:6379"
+      networks:
+        - backend
 
 ### Jenkins ###################################################
     jenkins:
