@@ -13,7 +13,7 @@ LABEL maintainer="Arthur Li <li_ahui@126.com>"
 
 # If you're in China, or you need to change sources, will be set CHANGE_SOURCE to true in .env.
 
-ARG CHANGE_SOURCE=true
+ARG CHANGE_SOURCE=false
 RUN if [ ${CHANGE_SOURCE} = true ]; then \
     # Change application source from dl-cdn.alpinelinux.org to aliyun source
     sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
@@ -22,7 +22,6 @@ RUN if [ ${CHANGE_SOURCE} = true ]; then \
 # always run apt update when start and after add new source list, then clean up at end.
 RUN rm -rf /var/cache/apk/* && \
     rm -rf /tmp/* \
-    && apk update \
     && apk add --no-cache --update --virtual .build-deps $PHPIZE_DEPS \
     && pecl channel-update pecl.php.net \
     && apk add --no-cache freetype libpng libjpeg-turbo freetype-dev libpng-dev libjpeg-turbo-dev && \
@@ -115,20 +114,6 @@ RUN if [ ${INSTALL_SWOOLE} = true ]; then \
 ;fi
 
 ###########################################################################
-# xlswriter EXTENSION
-###########################################################################
-
-ARG INSTALL_XLSWRITER=false
-
-RUN if [ ${INSTALL_XLSWRITER} = true ]; then \
-    # Install Php Swoole Extension
-    printf "\n" | pecl install -o -f https://pecl.php.net/get/xlswriter-1.3.4.tgz \
-    &&  rm -rf /tmp/pear \
-    && \
-    docker-php-ext-enable xlswriter \
-;fi
-
-###########################################################################
 # MongoDB:
 ###########################################################################
 
@@ -137,9 +122,8 @@ ARG INSTALL_MONGO=false
 RUN if [ ${INSTALL_MONGO} = true ]; then \
     # Install the mongodb extension
     apk add --no-cache --update libressl-dev && \
-    # wget https://github.com/mongodb/mongo-php-driver/releases/download/1.5.3/mongodb-1.5.3.tgz -O /tmp/mongodb.tar.tgz \
-    # && pecl install /tmp/mongodb.tar.tgz \
-    pecl install https://pecl.php.net/get/mongodb-1.7.4.tgz \
+    wget https://github.com/mongodb/mongo-php-driver/releases/download/1.5.3/mongodb-1.5.3.tgz -O /tmp/mongodb.tar.tgz \
+    && pecl install /tmp/mongodb.tar.tgz \
     && rm -rf /tmp/mongodb.tar.tgz \
     #pecl install mongodb && \
     && docker-php-ext-enable mongodb \
@@ -153,25 +137,25 @@ ARG INSTALL_SEASLOG=false
 
 RUN if [ ${INSTALL_SEASLOG} = true ]; then \
     # Install the SeasLog extension
-    # wget https://github.com/SeasX/SeasLog/archive/SeasLog-1.8.6.tar.gz -O /tmp/seaslog.tar.gz \
-    # && cd /tmp \
-    # && mkdir -p seaslog \
-    # && tar -xf seaslog.tar.gz -C seaslog --strip-components=1 \
-    # && rm seaslog.tar.gz \
-    # && ( \
-    #     cd seaslog \
-    #     && phpize \
-    #     && ./configure \
-    #     && make -j${NPROC} \
-    #     && make install \
-    # ) \
-    # && rm -r seaslog \
-    pecl install https://pecl.php.net/get/SeasLog-2.1.0.tgz \
+    wget https://github.com/SeasX/SeasLog/archive/SeasLog-1.8.6.tar.gz -O /tmp/seaslog.tar.gz \
+    && cd /tmp \
+    && mkdir -p seaslog \
+    && tar -xf seaslog.tar.gz -C seaslog --strip-components=1 \
+    && rm seaslog.tar.gz \
+    && ( \
+        cd seaslog \
+        && phpize \
+        && ./configure \
+        && make -j${NPROC} \
+        && make install \
+    ) \
+    && rm -r seaslog \
+    #pecl install seaslog && \
     && docker-php-ext-enable seaslog \
 ;fi
 
 # Copy seaslog configration
-COPY ./seaslog.ini.example /usr/local/etc/php/conf.d/seaslog.ini
+COPY ./seaslog.ini /usr/local/etc/php/conf.d/seaslog.ini
 
 ###########################################################################
 # ZipArchive:
@@ -181,11 +165,9 @@ ARG INSTALL_ZIP_ARCHIVE=false
 
 RUN if [ ${INSTALL_ZIP_ARCHIVE} = true ]; then \
     # Install the zip extension
+    docker-php-ext-install zip \
     #apk add docker-php-ext-configure \
     #--with-zlib-dir=/usr && docker-php-ext-install zip \
-    apk add --no-cache libzip-dev \
-    && docker-php-ext-configure zip --with-libzip=/usr/include \
-    && docker-php-ext-install zip \
 ;fi
 
 
@@ -256,10 +238,8 @@ RUN if [ ${INSTALL_PDO_MYSQL} = true ]; then \
 ARG INSTALL_COMPOSER=false
 
 RUN if [ ${INSTALL_COMPOSER} = true ]; then \
-    # curl -sS https://getcomposer.org/installer | php \
-    wget https://mirrors.aliyun.com/composer/composer.phar \
+    curl -sS https://getcomposer.org/installer | php \
     && mv composer.phar /usr/local/bin/composer \
-    && chmod +x /usr/local/bin/composer \
     && composer self-update --clean-backups \
 ;fi
 
@@ -282,8 +262,7 @@ COPY ./xlaravel.pool.conf /usr/local/etc/php-fpm.d/
 
 # iconv https://github.com/docker-library/php/issues/240
 
-# RUN apk add --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing gnu-libiconv
-RUN apk add --no-cache gnu-libiconv
+#RUN apk add --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing gnu-libiconv
 ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so php
 
 # Clean up
